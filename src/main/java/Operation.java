@@ -100,24 +100,20 @@ public class Operation {
         this.dns_ip = dns_ip;
     }
 
-    public static List<Operation> generateOperations(int rowNums){
-        List<Operation> operationList = new ArrayList<>();
-        for (int i = 0; i < rowNums; i++){
-            String client_ip = UUID.randomUUID().toString();
-            String time = String.valueOf(System.currentTimeMillis());
-            String domain = RandomStringUtils.randomAlphabetic(20);
-            String target_ip = RandomStringUtils.randomAlphabetic(15);
-            String rcode = RandomStringUtils.randomAlphabetic(8);
-            String auhority_record = RandomStringUtils.randomAlphabetic(12);
-            String query_type = RandomStringUtils.randomAlphabetic(5);
-            String add_msg = RandomStringUtils.randomAlphabetic(10);
-            String dns_ip = RandomStringUtils.randomAlphabetic(10);
+    public static Operation getOperation(){
 
-            Operation operation = new Operation(client_ip,domain,time,target_ip,rcode,query_type,auhority_record,add_msg,dns_ip);
-            operationList.add(operation);
-        }
+        String client_ip = UUID.randomUUID().toString();
+        String time = String.valueOf(System.currentTimeMillis());
+        String domain = RandomStringUtils.randomAlphabetic(20);
+        String target_ip = RandomStringUtils.randomAlphabetic(15);
+        String rcode = RandomStringUtils.randomAlphabetic(8);
+        String auhority_record = RandomStringUtils.randomAlphabetic(12);
+        String query_type = RandomStringUtils.randomAlphabetic(5);
+        String add_msg = RandomStringUtils.randomAlphabetic(10);
+        String dns_ip = RandomStringUtils.randomAlphabetic(10);
 
-        return operationList;
+        Operation operation = new Operation(client_ip,domain,time,target_ip,rcode,query_type,auhority_record,add_msg,dns_ip);
+        return operation;
     }
 
 

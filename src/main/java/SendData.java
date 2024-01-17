@@ -3,7 +3,6 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.sql.*;
-import java.util.List;
 import java.util.Properties;
 
 public class SendData {
@@ -21,37 +20,41 @@ public class SendData {
     static int rowNums = 20000000;
     private static Properties properties;
     public static void main(String[] args) throws SQLException {
-        if (args.length==5){
+        if (args[0].equalsIgnoreCase("mysql")){
             kafkaOrmysql = args[0];
             url = args[1];
             user = args[2];
             passwd = args[3];
             rowNums = Integer.parseInt(args[4]);
-            List<Operation> operationList = Operation.generateOperations(rowNums);
-            sendMysql(operationList);
+            sendMysql();
         }
-        else if (args.length==4){
+        else if (args[0].equalsIgnoreCase("kafka")){
             kafkaOrmysql = args[0];
             kafkaTopc = args[1];
             kafkahost = args[2];
             rowNums = Integer.parseInt(args[3]);
-            List<Operation> operationList = Operation.generateOperations(rowNums);
             properties = getConf();
-            sendKafka(kafkaTopc, operationList);
+            sendKafka(kafkaTopc);
         }else {
             throw new RuntimeException("The parameter is incorrect");
         }
 
     }
 
-    public static void sendKafka(String topicName, List<Operation> ops){
+    public static void sendKafka(String topicName){
         Producer<String, String> producer = null;
         try {
             producer = new KafkaProducer<>(properties);
 
-            for (Operation o : ops) {
-                String id = o.getClient_ip();
-                ProducerRecord<String, String> record = new ProducerRecord<>(topicName, id, convertOperationToString(o));
+//            for (Operation o : ops) {
+//                String id = o.getClient_ip();
+//                ProducerRecord<String, String> record = new ProducerRecord<>(topicName, id, convertOperationToString(o));
+//                producer.send(record);
+//            }
+            for (int i = 0; i < rowNums; i++){
+                Operation op = Operation.getOperation();
+                String id = op.getClient_ip();
+                ProducerRecord<String, String> record = new ProducerRecord<>(topicName, id, convertOperationToString(op));
                 producer.send(record);
             }
 
@@ -69,7 +72,7 @@ public class SendData {
         }
     }
 
-    public static void sendMysql(List<Operation> ops) throws SQLException {
+    public static void sendMysql() throws SQLException {
 
         Connection connection = DriverManager.getConnection(url, user, passwd);
         //String sql = String.format("create table if not EXISTS lakesoul_test_mysql_table(`client_ip`)")
@@ -88,12 +91,20 @@ public class SendData {
         Statement statement = connection.createStatement();
         statement.execute(sql);
 
-        for (Operation op : ops) {
+//        for (Operation op : ops) {
+//            String insertSql = String.format("insert into lakesoul_test_mysql_table values('%s','%s','%s','%s','%s','%s','%s','%s','%s')",
+//                    op.getClient_ip(),op.getDomain(),op.getTime(),op.getTarget_ip(),op.getRcode(),
+//                    op.getQuery_type(),op.getAuhority_record(),op.getAdd_msg(),op.getDns_ip());
+//            statement.execute(insertSql);
+//        }
+        for (int i=0; i< rowNums; i++){
+            Operation op = Operation.getOperation();
             String insertSql = String.format("insert into lakesoul_test_mysql_table values('%s','%s','%s','%s','%s','%s','%s','%s','%s')",
                     op.getClient_ip(),op.getDomain(),op.getTime(),op.getTarget_ip(),op.getRcode(),
                     op.getQuery_type(),op.getAuhority_record(),op.getAdd_msg(),op.getDns_ip());
             statement.execute(insertSql);
         }
+
         statement.close();
         connection.close();
     }
